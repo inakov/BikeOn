@@ -2,17 +2,52 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="bike.on.bikeon.MainActivity"
-    tools:showIn="@layout/activity_main">
+    tools:showIn="@layout/activity_main"
+    android:baselineAligned="false"
+    android:gravity="center_horizontal"
+    android:paddingTop="25dp">
 
-    <Button
+    <ImageView
+        android:layout_height="280dp"
+        android:layout_width="250dp"
+        android:layout_centerInParent="true"
+        android:id="@+id/logo_img"
+        android:src="@drawable/logofull"
+        android:layout_gravity="bottom|center_horizontal" />
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:textSize="25sp"
+        android:textColor="@color/cardview_light_background"
+        android:text="@string/moto1" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:textSize="25sp"
+        android:textColor="@color/cardview_light_background"
+        android:text="@string/moto2" />
+
+    <Button
+        android:layout_width="250dp"
+        android:layout_height="70dp"
+        android:background="@color/colorPrimary"
+        android:textColor="@color/cardview_light_background"
+        android:textSize="40dp"
+        android:paddingLeft="50dp"
+        android:gravity="left|center"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginTop="60dp"
         android:text="@string/button_lock"
+        android:drawableLeft="@drawable/ic_lock_outline_white_48dp"
         android:onClick="lockBike"/>
 
 </LinearLayout>

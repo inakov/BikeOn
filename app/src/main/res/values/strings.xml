@@ -6,4 +6,6 @@
     <string name="station_code_hit">code</string>
     <string name="button_lock">Lock</string>
     <string name="button_unlock">Unlock</string>
+    <string name="moto1">Fast and secure way to</string>
+    <string name="moto2">park your bike!</string>
 </resources>
