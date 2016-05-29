@@ -3,9 +3,7 @@ package bike.on.bikeon;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,23 +11,24 @@ import android.view.View;
 
 import com.facebook.AccessToken;
 import com.facebook.FacebookSdk;
+import com.google.gson.Gson;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
-
-import bike.on.bikeon.web.service.BikeOnService;
+import bike.on.bikeon.web.requests.LockRequest;
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.HttpStatus;
+import cz.msebera.android.httpclient.entity.StringEntity;
 
 public class MainActivity extends AppCompatActivity {
 
     public final static String EXTRA_STATION_ID = "bike.on.bikeon.STATION_ID";
     public final static String EXTRA_LOCK_TIME = "bike.on.bikeon.LOCK_TIME";
 
-    private BikeOnService server = new BikeOnService();
+    private static final String SERVER_URL = "http://185.14.184.35:9999/api/";
 
-//    private TextView info;
-//    private LoginButton loginButton;
-
-//    private CallbackManager callbackManager;
+    private final Gson jsonParser = new Gson();
+    private AsyncHttpClient client = new AsyncHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,28 +43,6 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         }
-
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-//                        .setAction("Action", null).show();
-
-                String url = "https://ajax.googleapis.com/ajax/services/search/web?v=1.0&q={query}";
-                RestTemplate restTemplate = new RestTemplate();
-                // Add the String message converter
-                restTemplate.getMessageConverters().add(new StringHttpMessageConverter());
-
-                String result = restTemplate.getForObject(url, String.class, "Android");
-                Log.i("Query Result", result);
-
-
-            }
-        });
     }
 
     public boolean isLoggedIn() {
@@ -118,22 +95,42 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 0) {
             if (resultCode == RESULT_OK) {
-                String contents = data.getStringExtra("SCAN_RESULT");
+                final String contents = data.getStringExtra("SCAN_RESULT");
                 Log.i("QR", "Scan result: " + contents);
 
-                Intent intent = new Intent(this, UnlockActivity.class);
-                String stationId = contents;
-                intent.putExtra(EXTRA_STATION_ID, stationId);
+                LockRequest lockRequest = new LockRequest();
+                lockRequest.setUid(AccessToken.getCurrentAccessToken().getUserId());
+                lockRequest.setDevice_id(contents);
 
-                //TODO: get lock time from server
-                Long locktime = System.currentTimeMillis();
-                intent.putExtra(EXTRA_LOCK_TIME, locktime);
-                startActivity(intent);
+                StringEntity entity = new StringEntity(jsonParser.toJson(lockRequest), "UTF-8");
+                client.post(MainActivity.this, SERVER_URL + "lock", entity, "application/json", new AsyncHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                        if(statusCode == HttpStatus.SC_OK){
+                            Log.i("lock-service", "lock request successful.");
+                            moveToUnlockActivity(contents);
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                        Log.i("lock-service", "lock request failed.");
+                    }
+                });
             }
 
             if(resultCode == RESULT_CANCELED){
                 //handle cancel
             }
         }
+    }
+
+    private void moveToUnlockActivity(String stationId){
+        Intent intent = new Intent(this, UnlockActivity.class);
+        intent.putExtra(EXTRA_STATION_ID, stationId);
+
+        Long locktime = System.currentTimeMillis();
+        intent.putExtra(EXTRA_LOCK_TIME, locktime);
+        startActivity(intent);
     }
 }

@@ -4,17 +4,16 @@ package bike.on.bikeon.web.requests;
  * Created by inakov on 28.05.16.
  */
 public class Account {
-
-    private String facebookUserId;
+    private String type = "auth";
+    private String uid;
     private String name;
-    private String profilePictureUrl;
 
-    public String getFacebookUserId() {
-        return facebookUserId;
+    public String getUid() {
+        return uid;
     }
 
-    public void setFacebookUserId(String facebookUserId) {
-        this.facebookUserId = facebookUserId;
+    public void setUid(String uid) {
+        this.uid = uid;
     }
 
     public String getName() {
@@ -25,11 +24,11 @@ public class Account {
         this.name = name;
     }
 
-    public String getProfilePictureUrl() {
-        return profilePictureUrl;
+    public String getType() {
+        return type;
     }
 
-    public void setProfilePictureUrl(String profilePictureUrl) {
-        this.profilePictureUrl = profilePictureUrl;
+    public void setType(String type) {
+        this.type = type;
     }
 }

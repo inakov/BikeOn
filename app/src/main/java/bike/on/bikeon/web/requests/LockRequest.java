@@ -4,7 +4,7 @@ package bike.on.bikeon.web.requests;
  * Created by inakov on 28.05.16.
  */
 public class LockRequest {
-
+    private String type = "lock";
     private String uid;
     private String device_id;
 

@@ -4,6 +4,7 @@ package bike.on.bikeon.web.requests;
  * Created by inakov on 28.05.16.
  */
 public class UnlockRequest {
+    private String type = "unlock";
     private String uid;
     private String device_id;
 

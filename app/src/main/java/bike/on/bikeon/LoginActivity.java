@@ -16,24 +16,39 @@ import com.facebook.GraphResponse;
 import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.google.gson.Gson;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import bike.on.bikeon.web.requests.Account;
-import bike.on.bikeon.web.service.BikeOnService;
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.HttpStatus;
+import cz.msebera.android.httpclient.entity.StringEntity;
 
 public class LoginActivity extends AppCompatActivity {
 
+    private static final String SERVER_URL = "http://185.14.184.35:9999/api/";
+
+    private final Gson jsonParser = new Gson();
+    private AsyncHttpClient client = new AsyncHttpClient();
+
     private LoginButton loginButton;
-    private BikeOnService server = new BikeOnService();
     private CallbackManager callbackManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-
         FacebookSdk.sdkInitialize(getApplicationContext());
+
+        if(!isLoggedIn()){
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+        }
+
+        setContentView(R.layout.activity_login);
 
         loginButton = (LoginButton)findViewById(R.id.login_button);
 
@@ -63,11 +78,25 @@ public class LoginActivity extends AppCompatActivity {
                                     Toast.makeText(getApplicationContext(), "Name " + userName, Toast.LENGTH_LONG).show();
 
                                     Account acc = new Account();
-                                    acc.setFacebookUserId(userId);
+                                    acc.setUid(userId);
                                     acc.setName(userName);
                                     Log.i("facebook", "profile information obtained.");
 
-                                    server.auth(acc);
+                                    Log.i("auth", "auth request created.");
+                                    StringEntity entity = new StringEntity(jsonParser.toJson(acc), "UTF-8");
+                                    client.post(LoginActivity.this, SERVER_URL + "auth", entity, "application/json", new AsyncHttpResponseHandler() {
+                                        @Override
+                                        public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                                            if(statusCode == HttpStatus.SC_OK)
+                                                Log.i("auth-service", "auth request successful.");
+                                        }
+
+                                        @Override
+                                        public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                                            Log.i("auth-service", "auth request failed.");
+                                        }
+                                    });
+                                    Log.i("auth", "auth request sent.");
 
                                 } catch (JSONException e) {
                                     e.printStackTrace();
@@ -98,5 +127,10 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         callbackManager.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public boolean isLoggedIn() {
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        return accessToken != null;
     }
 }

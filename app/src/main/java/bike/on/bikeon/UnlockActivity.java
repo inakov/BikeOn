@@ -6,21 +6,47 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.facebook.AccessToken;
+import com.facebook.FacebookSdk;
+import com.google.gson.Gson;
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+
+import bike.on.bikeon.web.requests.UnlockRequest;
+import cz.msebera.android.httpclient.Header;
+import cz.msebera.android.httpclient.HttpStatus;
+import cz.msebera.android.httpclient.entity.StringEntity;
+
 public class UnlockActivity extends AppCompatActivity {
+
+    private static final String SERVER_URL = "http://185.14.184.35:9999/api/";
+
+    private final Gson jsonParser = new Gson();
+    private AsyncHttpClient client = new AsyncHttpClient();
 
     TextView timerTextView;
     long startTime = 0;
+    String stationId = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        if(!isLoggedIn()){
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+        }
+
         setContentView(R.layout.activity_unlock);
 
         Intent intent = getIntent();
         startTime = intent.getLongExtra(MainActivity.EXTRA_LOCK_TIME, System.currentTimeMillis());
+        stationId = intent.getStringExtra(MainActivity.EXTRA_STATION_ID);
 
         timerTextView = (TextView) findViewById(R.id.timerTextView);
         timerHandler.postDelayed(timerRunnable, 0);
@@ -50,17 +76,32 @@ public class UnlockActivity extends AppCompatActivity {
     };
 
     public void unlockBike(View view) {
-        Double price = 1.99;
 
         new AlertDialog.Builder(this)
                 .setTitle("Unlock")
-                .setMessage("Are you sure you want to unlock your bike?\n Our service will cost you: " + price+ "lv.")
+                .setMessage("Are you sure you want to unlock your bike?")
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        // continue with delete
-                        //TODO: sent request to server
-                        Intent intent = new Intent(UnlockActivity.this, MainActivity.class);
-                        startActivity(intent);
+                        UnlockRequest unlockRequest = new UnlockRequest();
+                        unlockRequest.setDevice_id(stationId);
+                        unlockRequest.setUid(AccessToken.getCurrentAccessToken().getUserId());
+
+                        StringEntity entity = new StringEntity(jsonParser.toJson(unlockRequest), "UTF-8");
+                        client.post(UnlockActivity.this, SERVER_URL + "unlock", entity, "application/json", new AsyncHttpResponseHandler() {
+                            @Override
+                            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                                if(statusCode == HttpStatus.SC_OK) {
+                                    Log.i("unlock-service", "unlock request successful.");
+                                    moveTolockActivity();
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                                Log.i("unlock-service", "lock request failed.");
+                            }
+                        });
+
                     }
                 })
                 .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
@@ -71,6 +112,16 @@ public class UnlockActivity extends AppCompatActivity {
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
 
+    }
+
+    private void moveTolockActivity(){
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    public boolean isLoggedIn() {
+        AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        return accessToken != null;
     }
 
 }
