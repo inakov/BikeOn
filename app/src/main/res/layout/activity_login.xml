@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     android:baselineAligned="false"
     android:gravity="center_horizontal"
-    android:paddingTop="25dp"
-    android:background="@drawable/BG"
+    android:paddingTop="10dp"
+    android:background="@drawable/bg"
     tools:context="bike.on.bikeon.LoginActivity"
     android:weightSum="1">
 
@@ -23,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:textSize="25sp"
+        android:textSize="20sp"
         android:textColor="@color/cardview_light_background"
         android:text="@string/moto1" />
 
@@ -31,7 +31,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:textSize="25sp"
+        android:textSize="20sp"
         android:textColor="@color/cardview_light_background"
         android:text="@string/moto2" />
 

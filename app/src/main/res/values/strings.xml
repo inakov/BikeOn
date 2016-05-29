@@ -8,4 +8,5 @@
     <string name="button_unlock">Unlock</string>
     <string name="moto1">Fast and secure way to</string>
     <string name="moto2">park your bike!</string>
+    <string name="parkedTime">Parked time:</string>
 </resources>

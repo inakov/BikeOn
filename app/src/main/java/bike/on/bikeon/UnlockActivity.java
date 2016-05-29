@@ -28,7 +28,8 @@ public class UnlockActivity extends AppCompatActivity {
     private final Gson jsonParser = new Gson();
     private AsyncHttpClient client = new AsyncHttpClient();
 
-    TextView timerTextView;
+    TextView timerMin;
+    TextView timerSec;
     long startTime = 0;
     String stationId = "";
 
@@ -48,7 +49,8 @@ public class UnlockActivity extends AppCompatActivity {
         startTime = intent.getLongExtra(MainActivity.EXTRA_LOCK_TIME, System.currentTimeMillis());
         stationId = intent.getStringExtra(MainActivity.EXTRA_STATION_ID);
 
-        timerTextView = (TextView) findViewById(R.id.timerTextView);
+        timerMin = (TextView) findViewById(R.id.timerMin);
+        timerSec = (TextView) findViewById(R.id.timerSec);
         timerHandler.postDelayed(timerRunnable, 0);
 
     }
@@ -69,7 +71,8 @@ public class UnlockActivity extends AppCompatActivity {
             int minutes = seconds / 60;
             seconds = seconds % 60;
 
-            timerTextView.setText(String.format("%d:%02d", minutes, seconds));
+            timerMin.setText(String.format("%02d:", minutes));
+            timerSec.setText(String.format("%02d", seconds));
 
             timerHandler.postDelayed(this, 500);
         }
